@@ -12,22 +12,40 @@ export function GoogleLoginButton() {
   const handleLogin = async () => {
     setError(null);
     setLoading(true);
-    const supabase = createClient();
-    const origin =
-      process.env.NEXT_PUBLIC_APP_URL?.trim() || window.location.origin;
+    try {
+      // 環境変数(NEXT_PUBLIC_SUPABASE_*)が未設定だと、ここで例外になる。
+      // その場合は原因を画面に表示する。
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()) {
+        throw new Error(
+          "設定エラー: NEXT_PUBLIC_SUPABASE_URL が未設定です（Vercelの環境変数を確認して再デプロイしてください）"
+        );
+      }
+      if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim()) {
+        throw new Error(
+          "設定エラー: NEXT_PUBLIC_SUPABASE_ANON_KEY が未設定です（Vercelの環境変数を確認して再デプロイしてください）"
+        );
+      }
 
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${origin}/auth/callback`,
-      },
-    });
+      const supabase = createClient();
+      const origin =
+        process.env.NEXT_PUBLIC_APP_URL?.trim() || window.location.origin;
 
-    if (error) {
-      setError(error.message);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${origin}/auth/callback`,
+        },
+      });
+
+      if (error) {
+        setError(error.message);
+        setLoading(false);
+      }
+      // 成功時は Google へリダイレクトされる
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "ログインに失敗しました");
       setLoading(false);
     }
-    // 成功時は Google へリダイレクトされる
   };
 
   return (
