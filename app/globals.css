@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+/* Notion 風のシンプルな白基調。装飾は最小限。 */
+:root {
+  --background: #ffffff;
+  --foreground: #37352f;
+  --card: #ffffff;
+  --card-foreground: #37352f;
+  --border: #e9e8e4;
+  --muted: #f5f4f1;
+  --muted-foreground: #787774;
+  --accent: #2383e2;
+  --accent-foreground: #ffffff;
+  --danger: #e03e3e;
+  --ring: rgba(35, 131, 226, 0.35);
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-danger: var(--danger);
+  --color-ring: var(--ring);
+  --font-sans: var(--font-geist-sans), var(--font-jp), system-ui, sans-serif;
+
+  --radius: 0.5rem;
+  --radius-lg: 0.75rem;
+
+  --shadow-xs: 0 1px 2px 0 rgb(15 15 15 / 0.04);
+  --shadow-sm: 0 1px 2px 0 rgb(15 15 15 / 0.05), 0 1px 3px 0 rgb(15 15 15 / 0.04);
+  --shadow-md: 0 2px 4px -1px rgb(15 15 15 / 0.06),
+    0 8px 16px -4px rgb(15 15 15 / 0.08);
+}
+
+* {
+  border-color: var(--border);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
