@@ -1,5 +1,5 @@
 // アプリ全体で使うドメイン型。DB 行型は types/database.ts を参照。
-import type { Book } from "@/types/database";
+import type { Book, Question } from "@/types/database";
 
 export type { Book, Question, Profile, AiUsageStatus } from "@/types/database";
 
@@ -7,6 +7,14 @@ export type { Book, Question, Profile, AiUsageStatus } from "@/types/database";
 export type BookWithCount = Book & {
   question_count: number;
 };
+
+/** 検索結果の問題（投稿者名つき） */
+export type QuestionWithPoster = Question & {
+  poster_name: string;
+};
+
+/** 問題一覧の並び順 */
+export type QuestionSort = "newest" | "poster";
 
 /** Gemini Vision で画像から抽出した、登録フォームに流し込む構造 */
 export type FormattedQuestion = {

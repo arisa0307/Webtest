@@ -6,7 +6,12 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { questionRepository } from "@/lib/repositories/questionRepository";
 import { buildNormalizedText } from "@/lib/text/normalize";
 import { pathsFromPublicUrls, QUESTION_IMAGES_BUCKET } from "@/lib/storage/images";
-import type { Question, QuestionInput } from "@/lib/types";
+import type {
+  Question,
+  QuestionInput,
+  QuestionSort,
+  QuestionWithPoster,
+} from "@/lib/types";
 
 /** Storage 上の画像群を削除する（権限の都合で service_role 経由）。失敗は無視。 */
 async function removeStoredImages(urls: string[] | null | undefined) {
@@ -34,14 +39,30 @@ function isUniqueViolation(err: unknown): boolean {
 
 /** 問題に関する業務ロジック層。 */
 export const questionService = {
-  async search(bookId: string, query: string): Promise<Question[]> {
+  async search(
+    bookId: string,
+    query: string,
+    sort: QuestionSort = "newest"
+  ): Promise<QuestionWithPoster[]> {
     const supabase = await createClient();
-    return questionRepository.search(supabase, bookId, query);
+    return questionRepository.search(supabase, bookId, query, sort);
   },
 
   async get(id: string): Promise<Question | null> {
     const supabase = await createClient();
     return questionRepository.getById(supabase, id);
+  },
+
+  /** 投稿者の表示名を取得（不明なら「名無し」）。 */
+  async posterName(createdBy: string | null): Promise<string> {
+    if (!createdBy) return "名無し";
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("profiles")
+      .select("display_name, email")
+      .eq("id", createdBy)
+      .maybeSingle();
+    return data?.display_name?.trim() || data?.email || "名無し";
   },
 
   async create(input: QuestionInput): Promise<Question> {

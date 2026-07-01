@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
-import type { Question } from "@/lib/types";
+import type { Question, QuestionSort, QuestionWithPoster } from "@/lib/types";
 
 type Client = SupabaseClient<Database>;
 type QuestionInsert = Database["public"]["Tables"]["questions"]["Insert"];
@@ -8,15 +8,17 @@ type QuestionUpdate = Database["public"]["Tables"]["questions"]["Update"];
 
 /** 問題に対する DB アクセス層（純粋なデータ操作のみ） */
 export const questionRepository = {
-  /** ブック内の問題を検索（query が空なら全件・新しい順）。RPC 経由。 */
+  /** ブック内の問題を検索（query が空なら全件）。投稿者名つき。RPC 経由。 */
   async search(
     supabase: Client,
     bookId: string,
-    query: string
-  ): Promise<Question[]> {
+    query: string,
+    sort: QuestionSort
+  ): Promise<QuestionWithPoster[]> {
     const { data, error } = await supabase.rpc("search_questions", {
       p_book_id: bookId,
       p_query: query,
+      p_sort: sort,
     });
     if (error) throw error;
     return data ?? [];

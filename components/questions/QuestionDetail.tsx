@@ -15,9 +15,11 @@ import type { Question } from "@/lib/types";
 export function QuestionDetail({
   question,
   isAdmin,
+  posterName,
 }: {
   question: Question;
   isAdmin: boolean;
+  posterName: string;
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
@@ -123,6 +125,8 @@ export function QuestionDetail({
   return (
     <Card className="space-y-5 p-5">
       {error && <Notice variant="error">{error}</Notice>}
+
+      <p className="text-xs text-muted-foreground">投稿者：{posterName}</p>
 
       {question.has_graph && (
         <span className="inline-block rounded bg-muted px-2 py-0.5 text-xs text-muted-foreground">

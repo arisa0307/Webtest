@@ -154,21 +154,54 @@ create trigger questions_set_updated_at
   for each row execute function public.set_updated_at();
 
 -- ブック内の問題検索 RPC ----------------------------------------------------
--- p_query が空なら全件（新しい順）。それ以外は search_text の部分一致。
-create or replace function public.search_questions(p_book_id uuid, p_query text)
-returns setof public.questions
+-- p_query が空なら全件。部分一致は search_text に対して。
+-- p_sort: 'poster' で投稿者名順、それ以外は新しい順。
+-- 投稿者名(poster_name)も併せて返す。
+-- （戻り値の形を変えるため旧版を drop してから作成）
+drop function if exists public.search_questions(uuid, text);
+drop function if exists public.search_questions(uuid, text, text);
+create or replace function public.search_questions(
+  p_book_id uuid,
+  p_query text,
+  p_sort text default 'newest'
+)
+returns table (
+  id uuid,
+  book_id uuid,
+  question text,
+  choices text,
+  answer text,
+  explanation text,
+  image_urls text[],
+  has_graph boolean,
+  normalized_text text,
+  search_text text,
+  created_by uuid,
+  created_at timestamptz,
+  updated_at timestamptz,
+  poster_name text
+)
 language sql
 stable
 as $$
-  select *
-  from public.questions
-  where book_id = p_book_id
+  select
+    q.id, q.book_id, q.question, q.choices, q.answer, q.explanation,
+    q.image_urls, q.has_graph, q.normalized_text, q.search_text,
+    q.created_by, q.created_at, q.updated_at,
+    coalesce(nullif(btrim(p.display_name), ''), p.email, '名無し') as poster_name
+  from public.questions q
+  left join public.profiles p on p.id = q.created_by
+  where q.book_id = p_book_id
     and (
       p_query is null
       or btrim(p_query) = ''
-      or search_text ilike '%' || lower(btrim(p_query)) || '%'
+      or q.search_text ilike '%' || lower(btrim(p_query)) || '%'
     )
-  order by created_at desc;
+  order by
+    case when p_sort = 'poster'
+      then coalesce(nullif(btrim(p.display_name), ''), p.email, '名無し')
+    end asc nulls last,
+    q.created_at desc;
 $$;
 
 -- 重複候補の取得（登録前の AI 重複判定に使う上位 N 件） --------------------

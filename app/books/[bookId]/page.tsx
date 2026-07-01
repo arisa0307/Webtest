@@ -13,16 +13,25 @@ export default async function BookPage({
   searchParams,
 }: {
   params: Promise<{ bookId: string }>;
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; sort?: string }>;
 }) {
   const { bookId } = await params;
-  const { q } = await searchParams;
+  const { q, sort: sortParam } = await searchParams;
   const query = q ?? "";
+  const sort = sortParam === "poster" ? "poster" : "newest";
 
   const book = await bookService.get(bookId);
   if (!book) notFound();
 
-  const questions = await questionService.search(bookId, query);
+  const questions = await questionService.search(bookId, query, sort);
+
+  const sortHref = (value: "newest" | "poster") => {
+    const params = new URLSearchParams();
+    if (query) params.set("q", query);
+    if (value !== "newest") params.set("sort", value);
+    const qs = params.toString();
+    return qs ? `/books/${bookId}?${qs}` : `/books/${bookId}`;
+  };
 
   return (
     <div className="space-y-5 pb-24">
@@ -40,6 +49,30 @@ export default async function BookPage({
       </div>
 
       <QuestionSearch initialQuery={query} />
+
+      <div className="flex items-center gap-2 text-xs">
+        <span className="text-muted-foreground">並び替え:</span>
+        <Link
+          href={sortHref("newest")}
+          className={`rounded px-2 py-1 ${
+            sort === "newest"
+              ? "bg-muted font-medium text-foreground"
+              : "text-muted-foreground hover:bg-muted"
+          }`}
+        >
+          新しい順
+        </Link>
+        <Link
+          href={sortHref("poster")}
+          className={`rounded px-2 py-1 ${
+            sort === "poster"
+              ? "bg-muted font-medium text-foreground"
+              : "text-muted-foreground hover:bg-muted"
+          }`}
+        >
+          投稿者順
+        </Link>
+      </div>
 
       {questions.length === 0 ? (
         <p className="py-6 text-sm text-muted-foreground">

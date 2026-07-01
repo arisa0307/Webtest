@@ -16,9 +16,10 @@ export default async function QuestionPage({
   const question = await questionService.get(questionId);
   if (!question) notFound();
 
-  const [book, isAdmin] = await Promise.all([
+  const [book, isAdmin, posterName] = await Promise.all([
     bookService.get(question.book_id),
     isCurrentUserAdmin(),
+    questionService.posterName(question.created_by),
   ]);
 
   return (
@@ -33,7 +34,11 @@ export default async function QuestionPage({
         <h1 className="mt-2 text-xl font-bold">問題の詳細</h1>
       </div>
 
-      <QuestionDetail question={question} isAdmin={isAdmin} />
+      <QuestionDetail
+        question={question}
+        isAdmin={isAdmin}
+        posterName={posterName}
+      />
     </div>
   );
 }

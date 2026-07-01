@@ -84,8 +84,8 @@ export type Database = {
     Views: Record<never, never>;
     Functions: {
       search_questions: {
-        Args: { p_book_id: string; p_query: string };
-        Returns: Question[];
+        Args: { p_book_id: string; p_query: string; p_sort?: string };
+        Returns: (Question & { poster_name: string })[];
       };
       duplicate_candidates: {
         Args: { p_book_id: string; p_text: string; p_limit?: number };
